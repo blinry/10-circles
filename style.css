@@ -1,0 +1,11 @@
+canvas {
+    width: 1000px;
+    height: 1000px;
+}
+
+input {
+    padding: 0.3em;
+    font-size: 120%;
+    width: 50em;
+    font-family: mono;
+}
