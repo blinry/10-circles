@@ -9,3 +9,8 @@ input {
     width: 50em;
     font-family: mono;
 }
+
+span {
+    font-size: 200%;
+    font-family: sans;
+}
