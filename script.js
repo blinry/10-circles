@@ -249,15 +249,105 @@ function fib(i, f, t) {
     return [r * cos(theta), r * sin(theta), radius]
 }
 
+var engine, world
+worldScale = 100
+worldRestarted = false
+function initPhysics(func, tt) {
+    engine = Matter.Engine.create()
+    world = engine.world
+
+    //engine.gravity.scale = 0.0001
+
+    // add bouncy balls
+    let circleOptions = {
+        restitution: 0.99,
+    }
+    for (let i = 0; i < n; i++) {
+        let ii = i / n + 0.5 / n
+        let [x, y, r] = func(i, ii, tt)
+        let circle = Matter.Bodies.circle(
+            worldScale * x,
+            worldScale * y,
+            worldScale * r,
+            circleOptions
+        )
+        Matter.Composite.add(world, circle)
+    }
+
+    let wallOptions = {
+        isStatic: true,
+        render: {
+            fillStyle: "white",
+        },
+    }
+    let wallThickness = 0.1
+    Matter.Composite.add(
+        world,
+        Matter.Bodies.rectangle(
+            0 * worldScale,
+            (-1 - wallThickness / 2) * worldScale,
+            2 * worldScale,
+            wallThickness * worldScale,
+            wallOptions
+        )
+    )
+    Matter.Composite.add(
+        world,
+        Matter.Bodies.rectangle(
+            0 * worldScale,
+            (1 + wallThickness / 2) * worldScale,
+            2 * worldScale,
+            wallThickness * worldScale,
+            wallOptions
+        )
+    )
+    Matter.Composite.add(
+        world,
+        Matter.Bodies.rectangle(
+            (-1 - wallThickness / 2) * worldScale,
+            0 * worldScale,
+            wallThickness * worldScale,
+            2 * worldScale,
+            wallOptions
+        )
+    )
+    Matter.Composite.add(
+        world,
+        Matter.Bodies.rectangle(
+            (1 + wallThickness / 2) * worldScale,
+            0 * worldScale,
+            wallThickness * worldScale,
+            2 * worldScale,
+            wallOptions
+        )
+    )
+    worldRestarted = true
+}
+
+function physics(i, f, t) {
+    if (i == 0) {
+        Matter.Engine.update(engine, 1000 / 60)
+    }
+    // loop through objects
+    let bodies = Matter.Composite.allBodies(engine.world)
+    let body = bodies[i]
+    let pos = body.position
+    let x = pos.x / worldScale
+    let y = pos.y / worldScale
+    let r = 0.98 * (body.circleRadius / worldScale)
+    return [x, y, r]
+}
+
 effects = [
-    loading,
     title,
+    physics,
+    loading,
     spinner,
+    worm,
     donut,
     rings,
     solarsystem,
     moiree,
-    worm,
     grid,
     fib,
     concentric,
@@ -267,7 +357,7 @@ effects = [
 //effects = [effects[0]]
 //effects = [effects[0], effects[1]]
 
-let phaseLength = 4 // seconds
+let phaseLength = 6.6666 // seconds
 let fadeDuration = 1
 
 let t
@@ -318,6 +408,18 @@ function animate() {
         let amount = 1 / (1 + exp((0.5 - p2 / fadeDuration) * 10))
         let func = effects[phase]
         let func2 = effects[(phase + 1) % effects.length]
+
+        // special case for physics
+        if (func2 == physics) {
+            if (!worldRestarted) {
+                initPhysics(func, t + dt)
+            }
+            amount = 1
+        }
+        if (func == physics) {
+            worldRestarted = false
+        }
+
         interpolate(func, func2, amount, t + dt)
     } else {
         let func = effects[phase]
