@@ -166,6 +166,69 @@ function concentric(i, f, t) {
     return [ox, oy, f]
 }
 
+function orb(i, f, t) {
+    if (i == 0) {
+        return [0, 0, 0.4]
+    } else {
+        x = 0
+        y = 0
+        r = 0.4 + 0.2 * (sin(t * (0.5 + f * 2) + i) / 2 + 0.5)
+        return [x, y, r]
+    }
+}
+
+function spirograph(i, f, t) {
+    let r = 0.8
+    let x = 0
+    let y = 0
+    let rFac = 0.4
+    let a = 0
+
+    let ttt
+    if (i === 2) {
+        ttt = t - (i - 2)
+    } else if (i >= 3) {
+        ff = 5
+        ttt = Math.floor((t - (i - 3) / ff) * ff) / ff
+    } else {
+        ttt = t
+    }
+
+    for (let j = 0; j < i; j++) {
+        if (j == 0) {
+            a += ttt
+        } else {
+            a -= 2 * ttt
+        }
+        if (j == 1) {
+            rFac = 0.2
+        }
+        x += r * (1 - rFac) * cos(a)
+        y += r * (1 - rFac) * sin(a)
+        r *= rFac
+        if (j == 1 && i >= 2) {
+            r *= 0.3
+            return [x, y, r]
+        }
+    }
+    return [x, y, r]
+}
+
+function spirograph2(i, f, t) {
+    let r = 0.8
+    let x = 0
+    let y = 0
+    let rFac = 0.6
+    let a = 0
+    for (let j = 0; j < i; j++) {
+        a += t
+        x += r * (1 - rFac) * cos(a)
+        y += r * (1 - rFac) * sin(a)
+        r *= rFac
+    }
+    return [x, y, r]
+}
+
 function tunnel(i, f, t) {
     s = 5
     if (i == 0) {
@@ -208,6 +271,56 @@ function rings(i, f, t) {
 }
 
 function title(i, f, t) {
+    if (i == 0) {
+        //ctx.fillStyle = "white"
+        ctx.font = "bold 150px Jost"
+        ctx.textAlign = "center"
+        ctx.textBaseline = "middle"
+        ctx.fillText(
+            "1       IR   LE  ",
+            CANVAS_WIDTH / 2,
+            CANVAS_WIDTH * 0.517
+        )
+    }
+    h = 0.11
+    zeroX = -0.68
+    c1X = -0.27
+    c2X = 0.25
+    sX = 0.81
+    sAngle = (PI / 2) * 0.8 + PI
+    sFac = 0.666
+    letters = [
+        [zeroX, 0, h],
+        [zeroX, 0, h * 0.5],
+        [c1X, 0, h],
+        [c1X + h * 0.333, 0, h * 0.666],
+
+        [c2X, 0, h],
+        [c2X + h * 0.333, 0, h * 0.666],
+
+        [sX, -h / 2, h / 2],
+        [sX, h / 2, h / 2],
+        [
+            sX + (h / 2) * (1 - sFac) * cos(sAngle),
+            h / 2 + (h / 2) * (1 - sFac) * sin(sAngle),
+            (h / 2) * sFac,
+        ],
+        [
+            sX + (h / 2) * (1 - sFac) * cos(sAngle + PI),
+            -h / 2 + (h / 2) * (1 - sFac) * sin(sAngle + PI),
+            (h / 2) * sFac,
+        ],
+    ]
+    ;[x, y, r] = letters[i] || [0, 0, 0]
+    randAmount = 0.005
+    return [
+        x + randAmount * (Math.random() - 0.5),
+        y + randAmount * (Math.random() - 0.5),
+        r,
+    ]
+}
+
+function title2(i, f, t) {
     // draw text in center: "CIRCLES"
     if (i == 0) {
         //ctx.fillStyle = "white"
@@ -260,7 +373,7 @@ function initPhysics(func, tt) {
 
     // add bouncy balls
     let circleOptions = {
-        restitution: 0.99,
+        restitution: 1.1,
     }
     for (let i = 0; i < n; i++) {
         let ii = i / n + 0.5 / n
@@ -338,15 +451,41 @@ function physics(i, f, t) {
     return [x, y, r]
 }
 
+function tTest(i, f, t) {
+    return [t, 0, 0.1]
+}
+
+function hex(i, f, t) {
+    // align in hex grid
+    let x = i % 3
+    let y = floor(i / 3)
+    if (y % 2 == 0) {
+        x += 1 / 2
+    }
+    let r = 0.4 + (sin(t) / 2 + 0.5) * 0.8
+    if (i == 9) {
+        x = 3
+        y = 1
+    }
+
+    let fac = 1
+    return [(x - 1.5) * fac, (y - 1) * fac * 0.866, fac * r]
+}
+
 effects = [
+    tTest,
     title,
-    physics,
     loading,
+    spirograph,
+    solarsystem,
+    physics,
+    hex,
+    orb,
+    title,
     spinner,
     worm,
     donut,
     rings,
-    solarsystem,
     moiree,
     grid,
     fib,
@@ -354,10 +493,10 @@ effects = [
     lines,
     tunnel,
 ]
-//effects = [effects[0]]
+effects = [effects[0]]
 //effects = [effects[0], effects[1]]
 
-let phaseLength = 6.6666 // seconds
+let phaseLength = 6 // seconds
 let fadeDuration = 1
 
 let t
@@ -396,13 +535,12 @@ function animate() {
 
     t = (new Date().getTime() - start_time) / 1000
 
-    let dt = 0
     let phase = floor(
-        ((t + dt + effects.length * phaseLength) %
-            (effects.length * phaseLength)) /
+        ((t + effects.length * phaseLength) % (effects.length * phaseLength)) /
             phaseLength
     )
-    let phasePosition = (t + dt) % phaseLength
+    let phasePosition = t % phaseLength
+    tt = phasePosition / phaseLength
     if (phasePosition > phaseLength - fadeDuration) {
         let p2 = phasePosition - (phaseLength - fadeDuration)
         let amount = 1 / (1 + exp((0.5 - p2 / fadeDuration) * 10))
@@ -412,7 +550,7 @@ function animate() {
         // special case for physics
         if (func2 == physics) {
             if (!worldRestarted) {
-                initPhysics(func, t + dt)
+                initPhysics(func, t)
             }
             amount = 1
         }
@@ -420,10 +558,10 @@ function animate() {
             worldRestarted = false
         }
 
-        interpolate(func, func2, amount, t + dt)
+        interpolate(func, func2, amount, t)
     } else {
         let func = effects[phase]
-        apply(func, t + dt)
+        apply(func, t)
     }
     //blur()
     //postprocess()
@@ -496,5 +634,22 @@ function postprocess() {
     }
 }
 
-start_time = new Date().getTime()
-animate()
+// on click start
+let audio = new Audio("sleepy-silly-seahorse.ogg")
+document.addEventListener("click", function () {
+    start_time = new Date().getTime()
+    animate()
+    audio.currentTime = 0
+    audio.play()
+})
+// on escape, stop music
+document.addEventListener("keydown", function (e) {
+    if (e.key == "Escape") {
+        audio.pause()
+    }
+})
+
+let autostart = true
+if (autostart) {
+    document.dispatchEvent(new Event("click"))
+}
