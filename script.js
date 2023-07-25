@@ -45,8 +45,8 @@ function grid(i, f, t) {
     edge = ceil(sqrt(n))
     angle = i // radians
     r = 1 / (edge - 1)
-    ox = cos(angle) * sin(5 * t + i) * 0.4 * r
-    oy = sin(angle) * sin(5 * t + i) * 0.4 * r
+    ox = cos(angle) * sin(5 * t * 2 * PI + i) * 0.4 * r
+    oy = sin(angle) * sin(5 * t * 2 * PI + i) * 0.4 * r
     return [
         0.7 * ((floor(i / edge) / (edge - 1)) * 2 - 1) + ox,
         0.7 * (((i % edge) / (edge - 1)) * 2 - 1) + oy,
@@ -56,7 +56,7 @@ function grid(i, f, t) {
 
 function solarsystem(i, f, t) {
     // 0.1 to 1.5
-    z = 0.1 + (sin(t) / 2 + 0.5) * 1.4
+    z = 0.1 + (sin(t * 2 * PI) / 2 + 0.5) * 1.4
     sunradius = 0.2
     if (i == 0) {
         return [0, 0, sunradius * z]
@@ -120,7 +120,7 @@ function solarsystem(i, f, t) {
 
         planet = planets[i - 1]
 
-        tt = t * 2
+        tt = t * PI * 2
         r = planet.diameter / 2 / 30
         d = sunradius + planet.avg_distance / 500
         x = d * sin(tt / planet.orbital_period + i)
@@ -134,9 +134,9 @@ function solarsystem(i, f, t) {
 function spinner(i, f, t) {
     r = 0.5
     return [
-        r * sin(f * PI * 2 + t),
-        r * cos(f * PI * 2 + t),
-        0.05 + 0.4 * (sin(f * PI * 2 + 2 * t) / 2 + 0.5),
+        r * sin(f * PI * 2 + t * 2 * PI),
+        r * cos(f * PI * 2 + t * 2 * PI),
+        0.05 + 0.4 * (sin(f * PI * 2 + 2 * t * 2 * PI) / 2 + 0.5),
     ]
 }
 
@@ -144,9 +144,9 @@ function spinner(i, f, t) {
 function donut(i, f, t) {
     r = 0.5
     return [
-        r * sin(f * PI * 2 + t),
+        r * sin(f * PI * 2 + t * 2 * PI),
         0,
-        0.04 + 0.4 * (sin(f * PI * 2 + t + PI / 2) / 2 + 0.5),
+        0.04 + 0.4 * (sin(f * PI * 2 + t * 2 * PI + PI / 2) / 2 + 0.5),
     ]
 }
 
@@ -154,15 +154,15 @@ function worm(i, f, t) {
     w = 0.8
     return [
         w * (f - 0.5) * 1.8,
-        sin(3 * t + f * 5) * 0.2,
-        0.05 + 0.14 * (sin(2 * t + f * 5) + 1),
+        sin(3 * t * 2 * PI + f * 5) * 0.2,
+        0.05 + 0.14 * (sin(2 * t * 2 * PI + f * 5) + 1),
     ]
 }
 
 function concentric(i, f, t) {
-    wa = (1 - f) * (cos(t) / 2 + 0.5) // wobble amount
-    ox = wa * cos(t * 5)
-    oy = wa * sin(t * 5)
+    wa = (1 - f) * (cos(t * 2 * PI) / 2 + 0.5) // wobble amount
+    ox = wa * cos(t * 2 * PI * 5)
+    oy = wa * sin(t * 2 * PI * 5)
     return [ox, oy, f]
 }
 
@@ -172,7 +172,7 @@ function orb(i, f, t) {
     } else {
         x = 0
         y = 0
-        r = 0.4 + 0.2 * (sin(t * (0.5 + f * 2) + i) / 2 + 0.5)
+        r = 0.4 + 0.2 * (sin(t * 2 * PI * (0.5 + f * 2) + i) / 2 + 0.5)
         return [x, y, r]
     }
 }
@@ -186,12 +186,12 @@ function spirograph(i, f, t) {
 
     let ttt
     if (i === 2) {
-        ttt = t - (i - 2)
+        ttt = t * 2 * PI - (i - 2)
     } else if (i >= 3) {
         ff = 5
-        ttt = Math.floor((t - (i - 3) / ff) * ff) / ff
+        ttt = Math.floor((t * 2 * PI - (i - 3) / ff) * ff) / ff
     } else {
-        ttt = t
+        ttt = t * 2 * PI
     }
 
     for (let j = 0; j < i; j++) {
@@ -221,7 +221,7 @@ function spirograph2(i, f, t) {
     let rFac = 0.6
     let a = 0
     for (let j = 0; j < i; j++) {
-        a += t
+        a += t * 2 * PI
         x += r * (1 - rFac) * cos(a)
         y += r * (1 - rFac) * sin(a)
         r *= rFac
@@ -232,14 +232,17 @@ function spirograph2(i, f, t) {
 function tunnel(i, f, t) {
     s = 5
     if (i == 0) {
-        if (t % (2 * (n / (n - 1)) * (s / n)) < ((s / n) * n) / (n - 1)) {
+        if (
+            (t * 2 * PI) % (2 * (n / (n - 1)) * (s / n)) <
+            ((s / n) * n) / (n - 1)
+        ) {
             return [0, 0, 1.5]
         } else {
             return [0, 0, 0]
         }
     } else {
-        r = 1.5 * pow((i / (n - 1) + t / s) % 1, 4)
-        x = 0.5 * sin(t / 2) * (1.5 - r)
+        r = 1.5 * pow((i / (n - 1) + (t * 2 * PI) / s) % 1, 4)
+        x = 0.5 * sin((t * 2 * PI) / 2) * (1.5 - r)
         y = 0
         return [x, y, r]
     }
@@ -247,13 +250,17 @@ function tunnel(i, f, t) {
 
 function loading(i, f, t) {
     r = 0.3
-    rad = 0.08 + ((f - t / 2 - 2) % 1) * 0.1
-    return [r * sin(f * PI * 2 - t), r * cos(f * PI * 2 - t), rad]
+    rad = 0.08 + ((f - t * PI - 2) % 1) * 0.1
+    return [
+        r * sin(f * PI * 2 - t * 2 * PI),
+        r * cos(f * PI * 2 - t * 2 * PI),
+        rad,
+    ]
 }
 
 function lines(i, f, t) {
     rad = 10
-    x = f * 2.2 + (rad - 1.1) + sin(t * 3) * 0.1
+    x = f * 2.2 + (rad - 1.1) + sin(t * 2 * PI * 3) * 0.1
     y = 0
     r = rad
     return [x, y, r]
@@ -263,7 +270,7 @@ function rings(i, f, t) {
     j = i % (n / 2)
     jj = i % 2
     angle = (j * PI * 2) / (n / 2)
-    rad = 0.4 + 0.5 * sin(t * 2 + angle)
+    rad = 0.4 + 0.5 * sin(t * 2 * PI * 2 + angle)
     x = rad * cos(angle)
     y = rad * sin(angle)
     r = 0.3 + jj * 0.05
@@ -271,7 +278,7 @@ function rings(i, f, t) {
 }
 
 function title(i, f, t) {
-    if (i == 0) {
+    if (i == 0 && t < 0.72) {
         //ctx.fillStyle = "white"
         ctx.font = "bold 150px Jost"
         ctx.textAlign = "center"
@@ -285,7 +292,7 @@ function title(i, f, t) {
     h = 0.11
     zeroX = -0.68
     c1X = -0.27
-    c2X = 0.25
+    c2X = 0.28
     sX = 0.81
     sAngle = (PI / 2) * 0.8 + PI
     sFac = 0.666
@@ -332,17 +339,17 @@ function title2(i, f, t) {
     x = 1.2 * ((f % 0.5) * 2 - 0.5)
     y =
         1.1 * (floor(f * 2) / 2 - 0.25) +
-        sin(t * 10 * (1 + ((234 + i * i * 13) % 2)) + f * i * i) * 0.01
+        sin(t * 2 * PI * 10 * (1 + ((234 + i * i * 13) % 2)) + f * i * i) * 0.01
     r = 0.1
     return [x, y, r]
 }
 
 function moiree(i, f, t) {
-    x1 = 0.5 * sin(t)
+    x1 = 0.5 * sin(t * 2 * PI)
     y1 = -0.5
 
     x2 = 0.5
-    y2 = 0.25 + 0.25 * cos(t * 5)
+    y2 = 0.25 + 0.25 * cos(t * 2 * PI * 5)
 
     if (f < 0.5) {
         r = f * 4
@@ -356,7 +363,7 @@ function moiree(i, f, t) {
 function fib(i, f, t) {
     let phi = (1 + sqrt(5)) / 2
     let r = sqrt(i + 1) / 8
-    let theta = 2 * PI * (i + 1) * phi + t
+    let theta = 2 * PI * (i + 1) * phi + t * 2 * PI
     let radius = 0.03 * (i + 1) ** (1 / 6.0)
 
     return [r * cos(theta), r * sin(theta), radius]
@@ -462,7 +469,7 @@ function hex(i, f, t) {
     if (y % 2 == 0) {
         x += 1 / 2
     }
-    let r = 0.4 + (sin(t) / 2 + 0.5) * 0.8
+    let r = 0.4 + (sin(t * 2 * PI) / 2 + 0.5) * 0.8
     if (i == 9) {
         x = 3
         y = 1
@@ -473,10 +480,9 @@ function hex(i, f, t) {
 }
 
 effects = [
-    tTest,
-    title,
-    loading,
     spirograph,
+    loading,
+    title,
     solarsystem,
     physics,
     hex,
@@ -493,7 +499,7 @@ effects = [
     lines,
     tunnel,
 ]
-effects = [effects[0]]
+//effects = [effects[0]]
 //effects = [effects[0], effects[1]]
 
 let phaseLength = 6 // seconds
@@ -550,7 +556,7 @@ function animate() {
         // special case for physics
         if (func2 == physics) {
             if (!worldRestarted) {
-                initPhysics(func, t)
+                initPhysics(func, tt)
             }
             amount = 1
         }
@@ -558,10 +564,10 @@ function animate() {
             worldRestarted = false
         }
 
-        interpolate(func, func2, amount, t)
+        interpolate(func, func2, amount, tt)
     } else {
         let func = effects[phase]
-        apply(func, t)
+        apply(func, tt)
     }
     //blur()
     //postprocess()
