@@ -4,6 +4,7 @@ canvas {
 }
 
 input {
+    display: none;
     padding: 0.3em;
     font-size: 120%;
     width: 50em;
