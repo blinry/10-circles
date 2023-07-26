@@ -2,7 +2,12 @@ body {
     overflow: hidden;
     margin: 0;
     padding: 0;
-    background: #001;
+    /*background-image: url("dark.jpg");*/
+    /*background-color: #1a1c2c; travesol */
+    /* background-color: #234e70; // lighter blue */
+    /*background-color: #3f3c7e; // some blue */
+    /*background-color: #00539c;*/
+    background-color: #080819;
 }
 
 #container {

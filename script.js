@@ -13,7 +13,15 @@ let pow = Math.pow
 let PI = Math.PI
 
 //BLACK = "#1a1c2c"
-BLACK = "#001"
+//BLACK = "#001"
+
+WHITE = "#e7e7de" // travesol
+//WHITE = "#fbf8be" // pale yellow
+//WHITE = "#fbeaeb" // pink
+//WHITE = "#f5f5d9" // beige
+//WHITE = "#fff"
+
+//WHITE = BLACK // (-:
 
 canvas = document.getElementById("canvas")
 ctx = canvas.getContext("2d")
@@ -41,6 +49,31 @@ canvas.height = CANVAS_HEIGHT
 
 tempCanvas.width = CANVAS_WIDTH
 tempCanvas.height = CANVAS_HEIGHT
+
+var brightImg
+async function setupTextures() {
+    // new canvas for bright texture
+    brightCanvas = document.createElement("canvas")
+    brightCtx = brightCanvas.getContext("2d")
+    brightCanvas.width = CANVAS_WIDTH
+    brightCanvas.height = CANVAS_HEIGHT
+    // load white.jpg into HTMLImageElement
+    brightImg = new Image()
+    brightImg.src = "bright.jpg"
+    await brightImg.onload
+
+    // new canvas for dark texture
+    darkCanvas = document.createElement("canvas")
+    darkCtx = darkCanvas.getContext("2d")
+    darkCanvas.width = CANVAS_WIDTH
+    darkCanvas.height = CANVAS_HEIGHT
+    // load black.jpg from file and draw it on darkCanvas
+    darkImg = new Image()
+    darkImg.src = "dark.jpg"
+    darkImg.onload = function () {
+        darkCtx.drawImage(darkImg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+    }
+}
 
 // i: index
 // f: from 0 to 1
@@ -399,9 +432,6 @@ function initPhysics(func, tt) {
 
     let wallOptions = {
         isStatic: true,
-        render: {
-            fillStyle: "white",
-        },
     }
     let wallThickness = 0.1
     Matter.Composite.add(
@@ -483,6 +513,7 @@ function hex(i, f, t) {
 }
 
 effects = [
+    spinner,
     loading,
     physics,
     title,
@@ -490,7 +521,6 @@ effects = [
     tunnel,
     solarsystem,
     hex,
-    spinner,
     orb,
     donut,
     rings,
@@ -511,9 +541,8 @@ let t
 
 let lastFrame
 function animate() {
-    ctx.fillStyle = BLACK
-    ctx.globalCompositeOperation = "source-over"
-    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_WIDTH)
+    //ctx.globalCompositeOperation = "source-over"
+    tempCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
     /*
     // draw big circle
@@ -572,7 +601,7 @@ function animate() {
         apply(func, tt)
     }
     //blur()
-    //postprocess()
+    postprocess()
     requestAnimationFrame(animate)
 }
 
@@ -593,8 +622,8 @@ function blur() {
 }
 
 function apply(func, tt) {
-    ctx.globalCompositeOperation = "difference"
-    ctx.fillStyle = "white"
+    tempCtx.globalCompositeOperation = "xor"
+    tempCtx.fillStyle = WHITE
     // opacity 10%
     //ctx.globalAlpha = 0.1
     for (i = 0; i < n; i++) {
@@ -611,10 +640,14 @@ function apply(func, tt) {
             r = max(0, (output[2] / 2) * CANVAS_WIDTH)
         }
 
-        ctx.beginPath()
-        ctx.arc(x, y, r, 0, 2 * PI)
-        ctx.fill()
+        tempCtx.beginPath()
+        tempCtx.arc(x, y, r, 0, 2 * PI)
+        tempCtx.fill()
     }
+    // apply bright texture on top
+    tempCtx.globalCompositeOperation = "source-atop"
+    tempCtx.globalAlpha = 1
+    //ctx.drawImage(brightImg, 0, 0)
 }
 
 function interpolate(func1, func2, amount, tt) {
@@ -630,6 +663,23 @@ function interpolate(func1, func2, amount, tt) {
 }
 
 function postprocess() {
+    // motion blur
+    ctx.globalCompositeOperation = "destination-out"
+    ctx.globalAlpha = 0.7
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+    ctx.globalAlpha = 1
+
+    // draw canvas
+    ctx.globalCompositeOperation = "source-over"
+    ctx.drawImage(tempCanvas, 0, 0)
+
+    // copy canvas onto itsef as shadow
+    /*
+    ctx.globalAlpha = 0.5
+    ctx.drawImage(canvas, 0, 10)
+    ctx.globalAlpha = 1
+    */
+    /*
     for (let x = 0; x < CANVAS_WIDTH; x++) {
         for (let y = 1; y < CANVAS_WIDTH; y++) {
             let pixel = ctx.getImageData(x, y, 1, 1)
@@ -644,24 +694,29 @@ function postprocess() {
             ctx.putImageData(pixel, x, y)
         }
     }
+    */
 }
 
-// on click start
-let audio = new Audio("sleepy-silly-seahorse.ogg")
-document.addEventListener("click", function () {
-    start_time = new Date().getTime()
-    animate()
-    audio.currentTime = 0
-    audio.play()
-})
-// on escape, stop music
-document.addEventListener("keydown", function (e) {
-    if (e.key == "Escape") {
-        audio.pause()
+;(async () => {
+    await setupTextures()
+
+    // on click start
+    let audio = new Audio("sleepy-silly-seahorse.ogg")
+    document.addEventListener("click", function () {
+        start_time = new Date().getTime()
+        animate()
+        audio.currentTime = 0
+        audio.play()
+    })
+    // on escape, stop music
+    document.addEventListener("keydown", function (e) {
+        if (e.key == "Escape") {
+            audio.pause()
+        }
+    })
+
+    let autostart = false
+    if (autostart) {
+        document.dispatchEvent(new Event("click"))
     }
-})
-
-let autostart = false
-if (autostart) {
-    document.dispatchEvent(new Event("click"))
-}
+})()
