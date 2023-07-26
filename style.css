@@ -1,6 +1,27 @@
+body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    background: #001;
+}
+
+#container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 canvas {
-    width: 1000px;
-    height: 1000px;
+    width: 100%;
+    /*
+    image-rendering: optimizeSpeed;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -o-crisp-edges;
+    image-rendering: pixelated;
+    -ms-interpolation-mode: nearest-neighbor;
+    */
 }
 
 input {

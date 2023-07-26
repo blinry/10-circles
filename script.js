@@ -22,22 +22,25 @@ tempCanvas = document.createElement("canvas")
 tempCtx = tempCanvas.getContext("2d")
 
 n = 10 // number of circles
-CANVAS_WIDTH = 1000 // width of canvas
+CANVAS_WIDTH = 1920 // width of canvas
+CANVAS_HEIGHT = 1080
 
 // hook n slider to n
+/*
 n_slider = document.getElementById("slider")
 n_slider.value = n
 n_slider.oninput = function () {
     n = this.value
     document.getElementById("n").innerHTML = n
 }
+*/
 
 // adapt canvas to w
 canvas.width = CANVAS_WIDTH
-canvas.height = CANVAS_WIDTH
+canvas.height = CANVAS_HEIGHT
 
 tempCanvas.width = CANVAS_WIDTH
-tempCanvas.height = CANVAS_WIDTH
+tempCanvas.height = CANVAS_HEIGHT
 
 // i: index
 // f: from 0 to 1
@@ -168,17 +171,17 @@ function concentric(i, f, t) {
 
 function orb(i, f, t) {
     if (i == 0) {
-        return [0, 0, 0.4]
+        return [0, 0, 0.3]
     } else {
         x = 0
         y = 0
-        r = 0.4 + 0.2 * (sin(t * 2 * PI * (0.5 + f * 2) + i) / 2 + 0.5)
+        r = 0.3 + 0.2 * (sin(t * 2 * PI * (0.5 + f * 2) + i) / 2 + 0.5)
         return [x, y, r]
     }
 }
 
 function spirograph(i, f, t) {
-    let r = 0.8
+    let r = 0.5
     let x = 0
     let y = 0
     let rFac = 0.4
@@ -280,13 +283,13 @@ function rings(i, f, t) {
 function title(i, f, t) {
     if (i == 0 && t < 0.72) {
         //ctx.fillStyle = "white"
-        ctx.font = "bold 150px Jost"
+        ctx.font = "bold 290px Jost"
         ctx.textAlign = "center"
         ctx.textBaseline = "middle"
         ctx.fillText(
             "1       IR   LE  ",
             CANVAS_WIDTH / 2,
-            CANVAS_WIDTH * 0.517
+            CANVAS_HEIGHT * 0.53
         )
     }
     h = 0.11
@@ -405,7 +408,7 @@ function initPhysics(func, tt) {
         world,
         Matter.Bodies.rectangle(
             0 * worldScale,
-            (-1 - wallThickness / 2) * worldScale,
+            (-9 / 16.0 - wallThickness / 2) * worldScale,
             2 * worldScale,
             wallThickness * worldScale,
             wallOptions
@@ -415,7 +418,7 @@ function initPhysics(func, tt) {
         world,
         Matter.Bodies.rectangle(
             0 * worldScale,
-            (1 + wallThickness / 2) * worldScale,
+            (9 / 16.0 + wallThickness / 2) * worldScale,
             2 * worldScale,
             wallThickness * worldScale,
             wallOptions
@@ -480,30 +483,29 @@ function hex(i, f, t) {
 }
 
 effects = [
-    spirograph,
     loading,
-    title,
-    solarsystem,
     physics,
-    hex,
-    orb,
     title,
+    spirograph,
+    tunnel,
+    solarsystem,
+    hex,
     spinner,
-    worm,
+    orb,
     donut,
     rings,
+    worm,
     moiree,
     grid,
-    fib,
-    concentric,
+    //fib,
+    //concentric,
     lines,
-    tunnel,
 ]
 //effects = [effects[0]]
 //effects = [effects[0], effects[1]]
 
 let phaseLength = 6 // seconds
-let fadeDuration = 1
+let fadeDuration = phaseLength / 6
 
 let t
 
@@ -593,11 +595,15 @@ function blur() {
 function apply(func, tt) {
     ctx.globalCompositeOperation = "difference"
     ctx.fillStyle = "white"
+    // opacity 10%
+    //ctx.globalAlpha = 0.1
     for (i = 0; i < n; i++) {
         ii = i / n + 0.5 / n
         output = func(i, ii, tt)
         x = ((output[0] + 1) / 2) * CANVAS_WIDTH
-        y = ((output[1] + 1) / 2) * CANVAS_WIDTH
+        y =
+            ((output[1] + 1) / 2) * CANVAS_WIDTH -
+            0.5 * (CANVAS_WIDTH - CANVAS_HEIGHT)
         let r
         if (output[2] == null || output[2] == undefined) {
             r = 0.05
@@ -655,7 +661,7 @@ document.addEventListener("keydown", function (e) {
     }
 })
 
-let autostart = true
+let autostart = false
 if (autostart) {
     document.dispatchEvent(new Event("click"))
 }
