@@ -645,8 +645,8 @@ function apply(func, tt) {
         tempCtx.fill()
     }
     // apply bright texture on top
-    tempCtx.globalCompositeOperation = "source-atop"
-    tempCtx.globalAlpha = 1
+    //tempCtx.globalCompositeOperation = "source-atop"
+    //tempCtx.globalAlpha = 1
     //ctx.drawImage(brightImg, 0, 0)
 }
 
@@ -663,6 +663,8 @@ function interpolate(func1, func2, amount, tt) {
 }
 
 function postprocess() {
+    // clear
+    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
     // motion blur
     ctx.globalCompositeOperation = "destination-out"
     ctx.globalAlpha = 0.7
@@ -672,6 +674,11 @@ function postprocess() {
     // draw canvas
     ctx.globalCompositeOperation = "source-over"
     ctx.drawImage(tempCanvas, 0, 0)
+
+    // draw brightCanvas texture on everything, transparently
+    //ctx.globalCompositeOperation = "source-atop"
+    //ctx.globalAlpha = 0.4
+    //ctx.drawImage(brightImg, 0, 0)
 
     // copy canvas onto itsef as shadow
     /*
