@@ -143,10 +143,39 @@ function heart(i, f, t, speed) {
     return [x, y - 0.08, r]
 }
 
+function heartdissolvegood(i, f, t) {
+    ;[x, y, r] = heart(i, f, t, 1)
+    return [x * (1 - t), y * (1 - t), r]
+}
+
+function heartdissolvegood2(i, f, t) {
+    ff = 2
+    rad = 0.03 * ff * (1 - t)
+    ang = -7 * 2 * PI * t + f * 2 * PI
+    r = 0.05
+    x = cos(ang) * rad
+    y = sin(ang) * rad
+    return [x, y, r]
+}
+
+function empty(i, f, t) {
+    return [0, 0, 0]
+}
+
 function heartdissolve(i, f, t) {
     //whiteBG(i, f, t)
     ;[x, y, r] = heart(i, f, t, 1)
-    return [x, y, r * (1 + 40 * pow(t, 4))]
+    //return [x, y, r * (1 + 40 * pow(t, 4))]
+    //rdiff = max(0, -100 * (f - t))
+    rdiff = 1 - f
+    xx = x * (1 + rdiff)
+    yy = y * (1 + rdiff)
+    return [xx, yy, r + rdiff]
+}
+
+function heartdissolve2(i, f, t) {
+    ;[x, y, r] = heart(i, f, t, 1)
+    return [x, y, 1000]
 }
 
 function grid(i, f, t) {
@@ -755,7 +784,9 @@ effects = [
     loadingsquare,
     physics,
     heart,
-    heartdissolve,
+    heartdissolvegood,
+    heartdissolvegood2,
+    empty,
 
     //grid,
     //fib,
