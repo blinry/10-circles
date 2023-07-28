@@ -53,6 +53,8 @@ canvas.height = CANVAS_HEIGHT
 tempCanvas.width = CANVAS_WIDTH
 tempCanvas.height = CANVAS_HEIGHT
 
+let paused = true
+
 var brightImg
 async function setupTextures() {
     // new canvas for bright texture
@@ -81,7 +83,21 @@ async function setupTextures() {
 function appear(i, f, t) {
     x = (f - 0.5) * 1.5
     y = 0
-    r = min(pow(t, 1.5) * 1.5 - 0.1 - f, 0.07)
+    offx = 0.73
+    offs = 0.09
+    notes = [
+        0.15,
+        0.28,
+        0.36,
+        0.42,
+        offx,
+        offx + 1 * offs,
+        offx + 2 * offs,
+        offx + 3 * offs,
+        offx + 4 * offs,
+    ]
+    delay = notes[i]
+    r = min(pow(t, 1.5) * 1.5 - 0.1 - delay, 0.07)
     //r = min(t * 1.7 - 0.2 - f, 0.05)
     return [x, y, r]
 }
@@ -418,7 +434,7 @@ function dotdotdot(i, f, t) {
 
 function dotdotdot2(i, f, t) {
     tt = (t + 0.25) * 5
-    x = tan(tt + f / 4) * 0.1 + (f - 0.5) * 1.5
+    x = tan(tt * 4 + f / 4) * 0.1 + (f - 0.5) * 1.5
     y = 0
     r = 0.05
     return [x, y, r]
@@ -677,6 +693,10 @@ function whiteBG(i, f, t) {
 }
 
 function physics(i, f, t) {
+    if (!worldRestarted) {
+        // Oops. Do a workaround.
+        initPhysics(loading, t)
+    }
     whiteBG(i, f, t)
     //thesquare(i, f, t, 1)
     if (i == 0) {
@@ -751,6 +771,10 @@ let t
 
 let lastFrame
 function animate() {
+    if (paused) {
+        return
+    }
+
     //ctx.globalCompositeOperation = "source-over"
     tempCtx.globalCompositeOperation = "source-over"
     tempCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
@@ -925,6 +949,7 @@ function postprocess() {
     button.addEventListener("click", function () {
         button.style.display = "none"
         start_time = new Date().getTime()
+        paused = false
         animate()
         audio.currentTime = 0
         audio.play()
@@ -933,6 +958,42 @@ function postprocess() {
     document.addEventListener("keydown", function (e) {
         if (e.key == "Escape") {
             audio.pause()
+            button.style.display = "flex"
+            paused = true
+        }
+        // right key
+        if (e.key == "ArrowRight") {
+            // Set start_time so that we skip to the next effect.
+            t = (new Date().getTime() - start_time) / 1000
+
+            let phase = floor(
+                ((t + effects.length * phaseLength) %
+                    (effects.length * phaseLength)) /
+                    phaseLength
+            )
+            let nextPhase = (phase + 1) % effects.length
+            timeForNextPhaseStart = nextPhase * phaseLength
+            audio.currentTime = timeForNextPhaseStart
+            start_time = new Date().getTime() - timeForNextPhaseStart * 1000
+        }
+        if (e.key == "ArrowLeft") {
+            // Set start_time so that we skip to the next effect.
+            t = (new Date().getTime() - start_time) / 1000
+
+            let phase = floor(
+                ((t + effects.length * phaseLength) %
+                    (effects.length * phaseLength)) /
+                    phaseLength
+            )
+            let nextPhase = (phase - 1 + effects.length) % effects.length
+            timeForNextPhaseStart = nextPhase * phaseLength
+            if (timeForNextPhaseStart < audio.duration) {
+                audio.currentTime = timeForNextPhaseStart
+                audio.play()
+            } else {
+                audio.pause()
+            }
+            start_time = new Date().getTime() - timeForNextPhaseStart * 1000
         }
     })
 
