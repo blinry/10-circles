@@ -103,7 +103,7 @@ function appear(i, f, t) {
 }
 
 function heart(i, f, t, speed) {
-    whiteBG(i, f, t)
+    //whiteBG(i, f, t)
     //ang = f * 2 * PI + t * 3
     //rad = 0.3
     //x = sin(ang) * rad * 1.5
@@ -144,7 +144,7 @@ function heart(i, f, t, speed) {
 }
 
 function heartdissolve(i, f, t) {
-    whiteBG(i, f, t)
+    //whiteBG(i, f, t)
     ;[x, y, r] = heart(i, f, t, 1)
     return [x, y, r * (1 + 40 * pow(t, 4))]
 }
@@ -386,11 +386,11 @@ function thesquare(i, f, t, offset) {
     if (i == 0 && t < 1 - fadeDuration / phaseLength) {
         rectsize = max(
             (CANVAS_HEIGHT / 2) *
-                5 *
+                50 *
                 pow(
-                    max(0, t + offset - 0.1) +
-                        0.01 * max(0, t - 0.81) * CANVAS_HEIGHT,
-                    5
+                    max(0, t + offset - 0.1) -
+                        0.008 * max(0, t - 0.85) * CANVAS_HEIGHT,
+                    20
                 ),
             0
         )
@@ -433,7 +433,7 @@ function dotdotdot(i, f, t) {
 }
 
 function dotdotdot2(i, f, t) {
-    tt = (t + 0.25) * 5
+    tt = (min(t, 0.85) + 0.25) * 5
     x = tan(tt * 4 + f / 4) * 0.1 + (f - 0.5) * 1.5
     y = 0
     r = 0.05
@@ -547,7 +547,7 @@ function title(i, f, t) {
         ],
     ]
     ;[x, y, r] = letters[i] || [0, 0, 0]
-    randAmount = 0.02 * sin((t * PI) / 2)
+    randAmount = 0.03 * pow(t, 7) * 10
     return [
         x + randAmount * (Math.random() - 0.5),
         y + randAmount * (Math.random() - 0.5),
@@ -580,11 +580,11 @@ function moiree(i, f, t) {
     //y2 = 0.25 + 0.25 * cos(t * 2 * PI * 5)
     amount = 0.05
     speed = 5
-    x1 = t * 10 * amount * sin(speed * t * 2 * PI)
+    x1 = t * 5 * amount * sin(speed * t * 2 * PI)
     y1 = 0
 
     x2 = -amount * sin(1 + speed * 1.3 * t * 2 * PI)
-    y2 = t * 0.2 * cos(1 + speed * 1.3 * t * 2 * PI)
+    y2 = t * 0.1 * cos(1 + speed * 1.3 * t * 2 * PI)
 
     rad = 1
     if (f < 0.5) {
@@ -693,11 +693,11 @@ function whiteBG(i, f, t) {
 }
 
 function physics(i, f, t) {
-    if (!worldRestarted) {
+    if (typeof engine === "undefined") {
         // Oops. Do a workaround.
         initPhysics(loading, t)
     }
-    whiteBG(i, f, t)
+    //whiteBG(i, f, t)
     //thesquare(i, f, t, 1)
     if (i == 0) {
         Matter.Engine.update(engine, 1000 / 60)
@@ -739,7 +739,7 @@ effects = [
     infinity,
 
     title, // after overlap reveal
-    spinner, // good overlap reveal
+    spinner, // nicht so gut nach titel
     donut, // after spinner?
 
     orb, // before tunnel?
@@ -948,10 +948,11 @@ function postprocess() {
     button = document.querySelector("#go")
     button.addEventListener("click", function () {
         button.style.display = "none"
-        start_time = new Date().getTime()
         paused = false
+        if (typeof start_time === "undefined") {
+            start_time = new Date().getTime()
+        }
         animate()
-        audio.currentTime = 0
         audio.play()
     })
     // on escape, stop music
