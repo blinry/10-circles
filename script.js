@@ -88,13 +88,14 @@ function appear(i, f, t) {
     notes = [
         0.15,
         0.28,
-        0.36,
-        0.42,
+        0.4,
+        0.44,
         offx,
         offx + 1 * offs,
         offx + 2 * offs,
         offx + 3 * offs,
         offx + 4 * offs,
+        offx + 5 * offs,
     ]
     delay = notes[i]
     r = min(pow(t, 1.5) * 1.5 - 0.1 - delay, 0.07)
@@ -295,6 +296,30 @@ function worm(i, f, t) {
         sin(3 * t * 2 * PI + f * 5) * 0.2,
         0.05 + 0.14 * (sin(2 * t * 2 * PI + f * 5) + 1),
     ]
+}
+
+function tunnelgood2(i, f, t) {
+    // defining the center point of the circle in 3D
+    xx = 0.5 * cos(t * PI * 4)
+    yy = 0.5 * sin(t * PI * 4)
+    zz = 10 + i + 1 - 25 * t // into screen
+    // radius in 3D
+    rr = 1 - 0.2 * f
+    // project to a plane 1 unit away from the camera
+    xxx = xx / zz
+    yyy = yy / zz
+    rrr = rr / zz
+    if (zz < 0) {
+        xxx = 0
+        yyy = 0
+        rrr = 2
+    }
+
+    x = xxx
+    y = yyy
+    r = rrr
+
+    return [x, y, r]
 }
 
 function tunnelgood(i, f, t) {
@@ -763,6 +788,8 @@ function hex(i, f, t) {
 }
 
 effects = [
+    tunnelgood2, // temp
+
     appear,
     dotdotdot2,
     infinity,
@@ -772,7 +799,7 @@ effects = [
     donut, // after spinner?
 
     orb, // before tunnel?
-    tunnelgood,
+    tunnelgood2,
     lines,
 
     solarsystem,
