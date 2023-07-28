@@ -207,11 +207,14 @@ function worm(i, f, t) {
     ]
 }
 
-function concentric(i, f, t) {
-    wa = (1 - f) * (cos(t * 2 * PI) / 2 + 0.5) // wobble amount
-    ox = wa * cos(t * 2 * PI * 5)
-    oy = wa * sin(t * 2 * PI * 5)
-    return [ox, oy, f]
+function tunnelgood(i, f, t) {
+    tt = t
+    rad = 0.4 * (0.5 + 2 * tt)
+    //wa = (1 - f) * (cos(t * 2 * PI) / 2 + 0.5) // wobble amount
+    oy = rad * f * 0.5 * cos(tt * 2 * PI * 2)
+    //oy = -(1 - f) * 0.5 * abs(sin(t * 5 * 2 * PI))
+    ox = rad * (5 / 6) * f * sin(tt * 2 * PI * 2)
+    return [ox, oy, f * (1 + 2 * tt) * rad]
 }
 
 function orb(i, f, t) {
@@ -318,6 +321,39 @@ function swt(x) {
     return (1 + trg((2 * x - 1) / 4) * sqr(x / 2)) / 2
 }
 
+function thesquare(i, f, t, offset) {
+    if (i == 0 && t < 1 - fadeDuration / phaseLength) {
+        rectsize = max(
+            (CANVAS_HEIGHT / 2) *
+                5 *
+                pow(
+                    max(0, t + offset - 0.1) +
+                        0.02 * max(0, t - 0.82) * CANVAS_HEIGHT,
+                    5
+                ),
+            0
+        )
+        tempCtx.beginPath()
+        tempCtx.rect(
+            CANVAS_WIDTH / 2 - rectsize / 2,
+            CANVAS_HEIGHT / 2 - rectsize / 2,
+            rectsize,
+            rectsize
+        )
+        tempCtx.fill()
+    }
+}
+
+function loadingsquare(i, f, t) {
+    thesquare(i, f, t, 0)
+    r = 0.3
+    //rad = 0.08 + ((f - t * PI - 2) % 1) * 0.1
+    //rad = 0.02 + f * 0.05 + 0.01 * ((10 * t) % 1)
+    rad = -0.02 + 0.1 * swt(-(3 * t + f))
+    ang = (f + 1 * t) * PI * 2
+    return [r * sin(ang), r * cos(ang), rad]
+}
+
 function loading(i, f, t) {
     r = 0.3
     //rad = 0.08 + ((f - t * PI - 2) % 1) * 0.1
@@ -397,25 +433,28 @@ function square(i, f, t) {
         tempCtx.fill()
     }
     ang = t * 2 * PI + f * 2 * PI
-    rad = 0.5 * t + t * sin(t * 100 + f * 501) * 0.1
+    rad = 0.5 * t + t * sin(t * 100 + f * 502.234) * 0.2 + 0.05
     x = rad * cos(ang)
     y = rad * sin(ang)
-    r = 0.1 * t
+    r = 0.1 * t + 0.01
     return [x, y, r]
 }
 
 function title(i, f, t) {
-    if (i == 0 && t < 0.72) {
+    if (i == 0) {
         //ctx.fillStyle = "white"
         tempCtx.font = "bold 290px Jost"
         tempCtx.textAlign = "center"
         tempCtx.textBaseline = "middle"
+        //tempCtx.globalAlpha = min(1, 1 - abs((t - 0.72) / (1 - 0.72) - 0.5) * 2)
+        tempCtx.globalAlpha = max(0, sin(t * 1.2 * PI))
         //tempCtx.fillColor = WHITE
         tempCtx.fillText(
             "1       IR   LE  ",
             CANVAS_WIDTH / 2,
             CANVAS_HEIGHT * 0.53
         )
+        tempCtx.globalAlpha = 1
     }
     h = 0.11
     zeroX = -0.68
@@ -447,7 +486,7 @@ function title(i, f, t) {
         ],
     ]
     ;[x, y, r] = letters[i] || [0, 0, 0]
-    randAmount = 0.005
+    randAmount = 0.02 * sin((t * PI) / 2)
     return [
         x + randAmount * (Math.random() - 0.5),
         y + randAmount * (Math.random() - 0.5),
@@ -478,26 +517,36 @@ function moiree(i, f, t) {
 
     //x2 = 0.5
     //y2 = 0.25 + 0.25 * cos(t * 2 * PI * 5)
-    x1 = -0.5
+    amount = 0.05
+    speed = 5
+    x1 = t * 10 * amount * sin(speed * t * 2 * PI)
     y1 = 0
 
-    x2 = 0.5
-    y2 = 0
+    x2 = -amount * sin(1 + speed * 1.3 * t * 2 * PI)
+    y2 = t * 0.2 * cos(1 + speed * 1.3 * t * 2 * PI)
 
+    rad = 1
     if (f < 0.5) {
-        r = f * 2
+        r = f * rad
         return [x1, y1, r]
     } else {
-        r = (f - 0.5) * 2
+        r = (f - 0.5) * rad
         return [x2, y2, r]
     }
+}
+
+function rand(i, f, t) {
+    x = (Math.random() - 0.5) * 2
+    y = (Math.random() - 0.5) * 2
+    r = (Math.random() - 0.5) * 0.5
+    return [x, y, r]
 }
 
 function fib(i, f, t) {
     let phi = (1 + sqrt(5)) / 2
     let r = sqrt(i + 1) / 8
     let theta = 2 * PI * (i + 1) * phi + t * 2 * PI
-    let radius = 0.03 * (i + 1) ** (1 / 6.0)
+    let radius = 0.03 * (i + 1) ** (1 / 1)
 
     return [r * cos(theta), r * sin(theta), radius]
 }
@@ -574,7 +623,17 @@ function initPhysics(func, tt) {
     worldRestarted = true
 }
 
+function whiteBG(i, f, t) {
+    if (i == 0) {
+        tempCtx.beginPath()
+        tempCtx.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+        tempCtx.fill()
+    }
+}
+
 function physics(i, f, t) {
+    whiteBG(i, f, t)
+    //thesquare(i, f, t, 1)
     if (i == 0) {
         Matter.Engine.update(engine, 1000 / 60)
     }
@@ -610,29 +669,26 @@ function hex(i, f, t) {
 }
 
 effects = [
-    appear,
-    dotdotdot2,
-    loading,
-    //dotdotdot, // after title
+    //appear,
+    //dotdotdot2,
+    //infinity,
+
+    //title, // after overlap reveal
+    //spinner, // good overlap reveal
+    //donut, // after spinner?
+
+    //orb, // before tunnel?
+    //tunnelgood,
+    //lines,
+
+    //solarsystem,
+    //rings, // after solarsystem
+    //hex,
+    //worm,
+    //moiree,
+    //square,
+    loadingsquare,
     physics,
-    infinity,
-
-    title, // after overlap reveal
-    spinner, // good overlap reveal
-
-    tunnel,
-    orb, // after tunnel?
-    lines,
-
-    donut, // after spinner?
-
-    //spirograph, // bit lame, remove?
-    solarsystem,
-    rings, // after solarsystem
-    hex,
-    worm,
-    moiree,
-    square,
     //grid,
     //fib,
     //concentric,
@@ -761,7 +817,7 @@ function apply(func, tt) {
 function interpolate(func1, func2, amount, tt) {
     apply(function (i, f, t) {
         out1 = func1(i, f, t)
-        out2 = func2(i, f, t)
+        out2 = func2(i, f, t - 1)
         return [
             out1[0] * (1 - amount) + out2[0] * amount,
             out1[1] * (1 - amount) + out2[1] * amount,
@@ -832,8 +888,12 @@ function postprocess() {
         }
     })
 
-    let autostart = false
+    let autostart = true
     if (autostart) {
         button.dispatchEvent(new Event("click"))
     }
+
+    document.addEventListener("click", function () {
+        button.dispatchEvent(new Event("click"))
+    })
 })()
