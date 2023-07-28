@@ -338,7 +338,7 @@ function orb(i, f, t) {
     } else {
         x = 0
         y = 0
-        r = 0.3 + 0.2 * (sin(t * 2 * PI * (0.5 + f * 2) + i) / 2 + 0.5)
+        r = 0.3 + 0.1 * (sin(t * 2 * PI * (0.5 + f * 2) + i) / 2 + 0.5)
         return [x, y, r]
     }
 }
@@ -528,7 +528,7 @@ function rings(i, f, t) {
     rad = 0.4 + 0.5 * sin(t * 2 * PI * 2 + angle)
     x = rad * cos(angle)
     y = rad * sin(angle)
-    r = 0.3 + jj * 0.05
+    r = 0.1 + jj * (0.05 + 0.01 * j) + j * 0.05
     return [x, y, r]
 }
 
@@ -632,8 +632,8 @@ function moiree(i, f, t) {
 
     //x2 = 0.5
     //y2 = 0.25 + 0.25 * cos(t * 2 * PI * 5)
-    amount = 0.05
-    speed = 5
+    amount = 0.03
+    speed = 3
     x1 = t * 5 * amount * sin(speed * t * 2 * PI)
     y1 = 0
 
@@ -642,7 +642,7 @@ function moiree(i, f, t) {
 
     rad = 1
     if (f < 0.5) {
-        r = f * rad
+        r = f * rad * 1.01
         return [x1, y1, r]
     } else {
         r = (f - 0.5) * rad
@@ -788,8 +788,6 @@ function hex(i, f, t) {
 }
 
 effects = [
-    tunnelgood2, // temp
-
     appear,
     dotdotdot2,
     infinity,
@@ -802,10 +800,10 @@ effects = [
     tunnelgood2,
     lines,
 
-    solarsystem,
-    rings, // after solarsystem
-    hex,
     worm,
+    hex,
+    solarsystem, // nicht gut nach lines
+    rings, // after solarsystem
     moiree,
     //square,
     loadingsquare,
