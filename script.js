@@ -86,8 +86,53 @@ function appear(i, f, t) {
     return [x, y, r]
 }
 
-// i: index
-// f: from 0 to 1
+function heart(i, f, t, speed) {
+    whiteBG(i, f, t)
+    //ang = f * 2 * PI + t * 3
+    //rad = 0.3
+    //x = sin(ang) * rad * 1.5
+    //y = cos(ang) * rad - abs(x)
+    //y *= 0.8
+
+    p = (f + t * ((speed || t) * 5)) % 1
+    hsw = 0.5 // heart-square-width
+
+    x = 0
+    y = 0
+
+    dx = 0.2
+    dy = 0.04
+    rad = 0.28
+    if (p < 0.3333) {
+        pp = p / 0.3333
+        ang = -(PI * pp - (1 / 4) * PI)
+        x = cos(ang) * rad + dx
+        y = sin(ang) * rad - dy
+    } else if (p > 0.33333 && p < 0.66666) {
+        pp = p / 0.3333
+        ang = -(PI * pp - (3 / 4) * PI)
+        x = cos(ang) * rad - dx
+        y = sin(ang) * rad - dy
+    } else if (p > 0.66666 && p < 0.666666 + 0.33333 / 2) {
+        pp = (p - (0.6666 + 0.33333 / 2)) / (0.33333 / 2)
+        x = pp / 2.5
+        y = pp / 3 + 0.5
+    } else {
+        pp = (p - (0.6666 + 0.33333 / 2)) / (0.33333 / 2)
+        x = pp / 2.5
+        y = -pp / 3 + 0.5
+    }
+
+    r = 0.08
+    return [x, y - 0.08, r]
+}
+
+function heartdissolve(i, f, t) {
+    whiteBG(i, f, t)
+    ;[x, y, r] = heart(i, f, t, 1)
+    return [x, y, r * (1 + 40 * pow(t, 4))]
+}
+
 function grid(i, f, t) {
     edge = ceil(sqrt(n))
     angle = i // radians
@@ -328,7 +373,7 @@ function thesquare(i, f, t, offset) {
                 5 *
                 pow(
                     max(0, t + offset - 0.1) +
-                        0.02 * max(0, t - 0.82) * CANVAS_HEIGHT,
+                        0.01 * max(0, t - 0.81) * CANVAS_HEIGHT,
                     5
                 ),
             0
@@ -669,26 +714,29 @@ function hex(i, f, t) {
 }
 
 effects = [
-    //appear,
-    //dotdotdot2,
-    //infinity,
+    appear,
+    dotdotdot2,
+    infinity,
 
-    //title, // after overlap reveal
-    //spinner, // good overlap reveal
-    //donut, // after spinner?
+    title, // after overlap reveal
+    spinner, // good overlap reveal
+    donut, // after spinner?
 
-    //orb, // before tunnel?
-    //tunnelgood,
-    //lines,
+    orb, // before tunnel?
+    tunnelgood,
+    lines,
 
-    //solarsystem,
-    //rings, // after solarsystem
-    //hex,
-    //worm,
-    //moiree,
+    solarsystem,
+    rings, // after solarsystem
+    hex,
+    worm,
+    moiree,
     //square,
     loadingsquare,
     physics,
+    heart,
+    heartdissolve,
+
     //grid,
     //fib,
     //concentric,
@@ -872,7 +920,7 @@ function postprocess() {
     //await setupTextures()
 
     // on click start
-    let audio = new Audio("sleepy-silly-seahorse.ogg")
+    let audio = new Audio("metaluna-responds.mp3")
     button = document.querySelector("#go")
     button.addEventListener("click", function () {
         button.style.display = "none"
@@ -888,7 +936,7 @@ function postprocess() {
         }
     })
 
-    let autostart = true
+    let autostart = false
     if (autostart) {
         button.dispatchEvent(new Event("click"))
     }
