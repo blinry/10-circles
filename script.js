@@ -111,7 +111,7 @@ function heart(i, f, t, speed) {
     //y = cos(ang) * rad - abs(x)
     //y *= 0.8
 
-    p = (f + t * ((speed || t) * 5)) % 1
+    p = (f + t * ((speed || sin((t * PI) / 2)) * 5)) % 1
     hsw = 0.5 // heart-square-width
 
     x = 0
@@ -144,6 +144,15 @@ function heart(i, f, t, speed) {
     return [x, y - 0.08, r]
 }
 
+function flower(i, f, t) {
+    ang = f * 2 * PI + t * 20 - PI
+    rad = 0.3
+    x = sin(ang) * rad
+    y = cos(ang) * rad
+    r = 0.05 + 0.5 * t
+    return [x, y, r]
+}
+
 function heartdissolvegood(i, f, t) {
     ;[x, y, r] = heart(i, f, t, 1)
     return [x * (1 - t), y * (1 - t), r]
@@ -159,8 +168,22 @@ function heartdissolvegood2(i, f, t) {
     return [x, y, r]
 }
 
+function empty2(i, f, t) {
+    ang = f * 2 * PI + (1 + t) * 20 - PI
+    rad = 0.5 + 2 * t
+    x = sin(ang) * rad
+    y = cos(ang) * rad
+    r = 0.05 + 0.5 * (1 + t)
+    return [x, y, r]
+}
+
 function empty(i, f, t) {
-    return [0, 0, 0]
+    ang = f * 2 * PI + t * 5 + PI
+    rad = 0.5 + t * 2
+    x = sin(ang) * rad
+    y = cos(ang) * rad
+    r = 0.8
+    return [x, y, r]
 }
 
 function heartdissolve(i, f, t) {
@@ -459,8 +482,25 @@ function thesquare(i, f, t, offset) {
     }
 }
 
+function thesquare2(i, f, t, offset) {
+    if (i == 0) {
+        rectsize = min(0, 0.5 * (0.3 - t) * CANVAS_HEIGHT)
+        rectsize += min(0, 5 * (0.8 - t) * CANVAS_HEIGHT)
+        rectsize += -min(0, 20 * (0.85 - t) * CANVAS_HEIGHT)
+        rectsize = min(rectsize, 0)
+        tempCtx.beginPath()
+        tempCtx.rect(
+            CANVAS_WIDTH / 2 - rectsize / 2,
+            CANVAS_HEIGHT / 2 - rectsize / 2,
+            rectsize,
+            rectsize
+        )
+        tempCtx.fill()
+    }
+}
+
 function loadingsquare(i, f, t) {
-    thesquare(i, f, t, 0)
+    thesquare2(i, f, t, 0)
     r = 0.3
     //rad = 0.08 + ((f - t * PI - 2) % 1) * 0.1
     //rad = 0.02 + f * 0.05 + 0.01 * ((10 * t) % 1)
@@ -809,9 +849,10 @@ effects = [
     loadingsquare,
     physics,
     heart,
-    heartdissolvegood,
-    heartdissolvegood2,
-    empty,
+    flower,
+    //heartdissolvegood,
+    //heartdissolvegood2,
+    empty2,
 
     //grid,
     //fib,
@@ -864,6 +905,12 @@ function animate() {
     */
 
     t = (new Date().getTime() - start_time) / 1000
+
+    if (t > effects.length * phaseLength) {
+        paused = true
+        start_time = new Date().getTime()
+        return
+    }
 
     let phase = floor(
         ((t + effects.length * phaseLength) % (effects.length * phaseLength)) /
