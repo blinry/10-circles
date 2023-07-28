@@ -1,6 +1,9 @@
 let sin = Math.sin
 let cos = Math.cos
 let tan = Math.tan
+let asin = Math.asin
+let acos = Math.acos
+let atan = Math.atan
 let abs = Math.abs
 let floor = Math.floor
 let ceil = Math.ceil
@@ -75,6 +78,14 @@ async function setupTextures() {
     }
 }
 
+function appear(i, f, t) {
+    x = (f - 0.5) * 1.5
+    y = 0
+    r = min(pow(t, 1.5) * 1.5 - 0.1 - f, 0.07)
+    //r = min(t * 1.7 - 0.2 - f, 0.05)
+    return [x, y, r]
+}
+
 // i: index
 // f: from 0 to 1
 function grid(i, f, t) {
@@ -92,7 +103,8 @@ function grid(i, f, t) {
 
 function solarsystem(i, f, t) {
     // 0.1 to 1.5
-    z = 0.1 + (sin(t * 2 * PI) / 2 + 0.5) * 1.4
+    //z = 0.1 + (cos(t * 2 * PI) / 2 + 0.5) * 1.4
+    z = 2 - 2.2 * t
     sunradius = 0.2
     if (i == 0) {
         return [0, 0, sunradius * z]
@@ -244,6 +256,9 @@ function spirograph(i, f, t) {
         r *= rFac
         if (j == 1 && i >= 2) {
             r *= 0.3
+            if (i >= 3) {
+                //r *= 1 / (i - 2)
+            }
             return [x, y, r]
         }
     }
@@ -265,6 +280,14 @@ function spirograph2(i, f, t) {
     return [x, y, r]
 }
 
+function tunnel2(i, f, t) {
+    s = 5
+    r = 1.5 * pow((i / (n - 1) + (t * 2 * PI) / s) % 1, 4)
+    x = 0.5 * sin((t * 2 * PI) / 2) * (1.5 - r)
+    y = 0
+    return [x, y, r]
+}
+
 function tunnel(i, f, t) {
     s = 5
     if (i == 0) {
@@ -274,27 +297,72 @@ function tunnel(i, f, t) {
         ) {
             return [0, 0, 1.5]
         } else {
-            return [0, 0, 0]
+            return [0, -3, 1.5]
         }
     } else {
         r = 1.5 * pow((i / (n - 1) + (t * 2 * PI) / s) % 1, 4)
-        x = 0.5 * sin((t * 2 * PI) / 2) * (1.5 - r)
+        x = 0.5 * sin((t * 3.9 * PI) / 2) * (1.5 - r)
         y = 0
         return [x, y, r]
     }
 }
 
+let delta = 0.05
+function trg(x) {
+    return 1 - (2 * acos((1 - delta) * sin(2 * PI * x))) / PI
+}
+function sqr(x) {
+    return (2 * atan(sin(2 * PI * x) / delta)) / PI
+}
+function swt(x) {
+    return (1 + trg((2 * x - 1) / 4) * sqr(x / 2)) / 2
+}
+
 function loading(i, f, t) {
     r = 0.3
-    rad = 0.08 + ((f - t * PI - 2) % 1) * 0.1
-    return [
-        r * sin(f * PI * 2 - t * 2 * PI),
-        r * cos(f * PI * 2 - t * 2 * PI),
-        rad,
-    ]
+    //rad = 0.08 + ((f - t * PI - 2) % 1) * 0.1
+    //rad = 0.02 + f * 0.05 + 0.01 * ((10 * t) % 1)
+    rad = -0.02 + 0.1 * swt(-(3 * t + f))
+    ang = (f + 1 * t) * PI * 2
+    return [r * sin(ang), r * cos(ang), rad]
+}
+
+function dotdotdot(i, f, t) {
+    tt = t * 5 - 9234
+    x = ((tt + 0.5 + f * 2.2) % 2.2) + 1.1
+    y = 0
+    r = 0.08
+    return [x, y, r]
+}
+
+function dotdotdot2(i, f, t) {
+    tt = (t + 0.25) * 5
+    x = tan(tt + f / 4) * 0.1 + (f - 0.5) * 1.5
+    y = 0
+    r = 0.05
+    return [x, y, r]
+}
+
+function infinity(i, f, t) {
+    fac = 0.4
+    tt = t
+    ff = f * 2.3
+    y = cos(2 * (tt + ff) * PI * 2 + PI / 2) * fac
+    x = 2 * sin(1 * (tt + ff) * PI * 2) * fac
+    r = 0.099
+    return [x, y, r]
 }
 
 function lines(i, f, t) {
+    rad = 5
+    // travel 1 band in 1 time unit
+    x = (f - 0.5 - ((t + 0.4) % 0.2)) * 2.2 + rad + 0.2
+    y = 0
+    r = rad
+    return [x, y, r]
+}
+
+function lines2(i, f, t) {
     rad = 10
     x = f * 2.2 + (rad - 1.1) + sin(t * 2 * PI * 3) * 0.1
     y = 0
@@ -313,13 +381,37 @@ function rings(i, f, t) {
     return [x, y, r]
 }
 
+function square(i, f, t) {
+    if (i == 0) {
+        rectsize = max(
+            (CANVAS_HEIGHT / 2) * t - max(0, t - 0.8) * 10 * CANVAS_HEIGHT,
+            0
+        )
+        tempCtx.beginPath()
+        tempCtx.rect(
+            CANVAS_WIDTH / 2 - rectsize / 2,
+            CANVAS_HEIGHT / 2 - rectsize / 2,
+            rectsize,
+            rectsize
+        )
+        tempCtx.fill()
+    }
+    ang = t * 2 * PI + f * 2 * PI
+    rad = 0.5 * t + t * sin(t * 100 + f * 501) * 0.1
+    x = rad * cos(ang)
+    y = rad * sin(ang)
+    r = 0.1 * t
+    return [x, y, r]
+}
+
 function title(i, f, t) {
     if (i == 0 && t < 0.72) {
         //ctx.fillStyle = "white"
-        ctx.font = "bold 290px Jost"
-        ctx.textAlign = "center"
-        ctx.textBaseline = "middle"
-        ctx.fillText(
+        tempCtx.font = "bold 290px Jost"
+        tempCtx.textAlign = "center"
+        tempCtx.textBaseline = "middle"
+        //tempCtx.fillColor = WHITE
+        tempCtx.fillText(
             "1       IR   LE  ",
             CANVAS_WIDTH / 2,
             CANVAS_HEIGHT * 0.53
@@ -381,17 +473,22 @@ function title2(i, f, t) {
 }
 
 function moiree(i, f, t) {
-    x1 = 0.5 * sin(t * 2 * PI)
-    y1 = -0.5
+    //x1 = 0.5 * sin(t * 2 * PI)
+    //y1 = -0.5
+
+    //x2 = 0.5
+    //y2 = 0.25 + 0.25 * cos(t * 2 * PI * 5)
+    x1 = -0.5
+    y1 = 0
 
     x2 = 0.5
-    y2 = 0.25 + 0.25 * cos(t * 2 * PI * 5)
+    y2 = 0
 
     if (f < 0.5) {
-        r = f * 4
+        r = f * 2
         return [x1, y1, r]
     } else {
-        r = (f - 0.5) * 4
+        r = (f - 0.5) * 2
         return [x2, y2, r]
     }
 }
@@ -412,11 +509,11 @@ function initPhysics(func, tt) {
     engine = Matter.Engine.create()
     world = engine.world
 
-    //engine.gravity.scale = 0.0001
+    //engine.gravity.scale = 0.01
 
     // add bouncy balls
     let circleOptions = {
-        restitution: 1.1,
+        restitution: 1.2,
     }
     for (let i = 0; i < n; i++) {
         let ii = i / n + 0.5 / n
@@ -513,28 +610,37 @@ function hex(i, f, t) {
 }
 
 effects = [
-    spinner,
+    appear,
+    dotdotdot2,
     loading,
+    //dotdotdot, // after title
     physics,
-    title,
-    spirograph,
+    infinity,
+
+    title, // after overlap reveal
+    spinner, // good overlap reveal
+
     tunnel,
+    orb, // after tunnel?
+    lines,
+
+    donut, // after spinner?
+
+    //spirograph, // bit lame, remove?
     solarsystem,
+    rings, // after solarsystem
     hex,
-    orb,
-    donut,
-    rings,
     worm,
     moiree,
-    grid,
+    square,
+    //grid,
     //fib,
     //concentric,
-    lines,
 ]
 //effects = [effects[0]]
 //effects = [effects[0], effects[1]]
 
-let phaseLength = 6 // seconds
+let phaseLength = 6.66666666 // seconds
 let fadeDuration = phaseLength / 6
 
 let t
@@ -542,7 +648,10 @@ let t
 let lastFrame
 function animate() {
     //ctx.globalCompositeOperation = "source-over"
+    tempCtx.globalCompositeOperation = "source-over"
     tempCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+
+    tempCtx.globalCompositeOperation = "xor"
 
     /*
     // draw big circle
@@ -622,7 +731,6 @@ function blur() {
 }
 
 function apply(func, tt) {
-    tempCtx.globalCompositeOperation = "xor"
     tempCtx.fillStyle = WHITE
     // opacity 10%
     //ctx.globalAlpha = 0.1
@@ -666,10 +774,10 @@ function postprocess() {
     // clear
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
     // motion blur
-    ctx.globalCompositeOperation = "destination-out"
-    ctx.globalAlpha = 0.7
-    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-    ctx.globalAlpha = 1
+    //ctx.globalCompositeOperation = "destination-out"
+    //ctx.globalAlpha = 0.7
+    //ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+    //ctx.globalAlpha = 1
 
     // draw canvas
     ctx.globalCompositeOperation = "source-over"
@@ -705,11 +813,13 @@ function postprocess() {
 }
 
 ;(async () => {
-    await setupTextures()
+    //await setupTextures()
 
     // on click start
     let audio = new Audio("sleepy-silly-seahorse.ogg")
-    document.addEventListener("click", function () {
+    button = document.querySelector("#go")
+    button.addEventListener("click", function () {
+        button.style.display = "none"
         start_time = new Date().getTime()
         animate()
         audio.currentTime = 0
@@ -724,6 +834,6 @@ function postprocess() {
 
     let autostart = false
     if (autostart) {
-        document.dispatchEvent(new Event("click"))
+        button.dispatchEvent(new Event("click"))
     }
 })()

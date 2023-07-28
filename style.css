@@ -7,7 +7,9 @@ body {
     /* background-color: #234e70; // lighter blue */
     /*background-color: #3f3c7e; // some blue */
     /*background-color: #00539c;*/
-    background-color: #080819;
+    /* background-color: #080819; // best yet */
+    background-color: #0d0b0a;
+    font-family: sans;
 }
 
 #container {
@@ -40,4 +42,29 @@ input {
 span {
     font-size: 200%;
     font-family: sans;
+}
+
+#go {
+    width: 20vw;
+    height: 20vw;
+    border-radius: 50%;
+    background: #e7e7de;
+    color: #0d0b0a;
+    font-size: 4vw;
+    /* position in center of parent */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* offset by half width and height */
+    margin-left: -10vw;
+    margin-top: -10vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#go:hover {
+    background: #d7d7ce;
 }
