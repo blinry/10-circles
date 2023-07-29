@@ -218,7 +218,7 @@ function grid(i, f, t) {
 function solarsystem(i, f, t) {
     // 0.1 to 1.5
     //z = 0.1 + (cos(t * 2 * PI) / 2 + 0.5) * 1.4
-    z = 2 - 2.2 * t
+    z = 2 - 2.3 * t
     sunradius = 0.2
     if (i == 0) {
         return [0, 0, sunradius * z]
@@ -250,43 +250,46 @@ function solarsystem(i, f, t) {
             },
             {
                 name: "Jupiter",
-                orbital_period: 11.86,
+                orbital_period: 11.86 / 5,
                 diameter: 11.209,
                 avg_distance: 779,
             },
             {
                 name: "Saturn",
-                orbital_period: 29.46,
+                orbital_period: 29.46 / 5,
                 diameter: 9.449,
                 avg_distance: 1430,
             },
             {
                 name: "Uranus",
-                orbital_period: 84.02,
+                orbital_period: 84.02 / 5,
                 diameter: 4.007,
                 avg_distance: 2880,
             },
             {
                 name: "Neptune",
-                orbital_period: 164.8,
+                orbital_period: 164.8 / 5,
                 diameter: 3.883,
                 avg_distance: 4500,
             },
-            {
-                name: "Pluto",
-                orbital_period: 247.1,
-                diameter: 0.186,
-                avg_distance: 5910,
-            },
         ]
 
+        ring = false
+        if (i == 9) {
+            i = 6
+            ring = true
+        }
         planet = planets[i - 1]
 
         tt = t * PI * 2
         r = planet.diameter / 2 / 30
         d = sunradius + planet.avg_distance / 500
-        x = d * sin(tt / planet.orbital_period + i)
-        y = 0.3 * d * cos(tt / planet.orbital_period + i)
+        x = d * sin(tt / planet.orbital_period + i * 2)
+        y = 0.3 * d * cos(tt / planet.orbital_period + i * 2)
+        if (ring) {
+            y += r * 0.45
+            r *= 1.5
+        }
         return [x * z, y * z, r * z]
     } else {
         return [0, 0, 0.000001]
@@ -710,14 +713,20 @@ var engine, world
 worldScale = 100
 worldRestarted = false
 function initPhysics(func, tt) {
+    if (typeof engine !== "undefined") {
+        engine.world.bodies.forEach((body) => {
+            Matter.Composite.remove(engine.world, body)
+        })
+    }
     engine = Matter.Engine.create()
     world = engine.world
 
-    //engine.gravity.scale = 0.01
+    engine.gravity.scale = 0.0005
 
     // add bouncy balls
     let circleOptions = {
-        restitution: 1.2,
+        restitution: 1.25,
+        //inertia: Infinity,
     }
     for (let i = 0; i < n; i++) {
         let ii = i / n + 0.5 / n
@@ -733,6 +742,7 @@ function initPhysics(func, tt) {
 
     let wallOptions = {
         isStatic: true,
+        restitution: 1.25,
     }
     let wallThickness = 0.1
     Matter.Composite.add(
