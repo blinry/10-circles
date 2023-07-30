@@ -918,7 +918,9 @@ function animate() {
 
     if (t > effects.length * phaseLength) {
         paused = true
-        start_time = new Date().getTime()
+        button.style.display = "flex"
+        button.innerHTML = "Replay"
+        start_time = undefined
         return
     }
 
@@ -1053,6 +1055,7 @@ function postprocess() {
     */
 }
 
+let button
 ;(async () => {
     //await setupTextures()
 
@@ -1064,6 +1067,7 @@ function postprocess() {
         paused = false
         if (typeof start_time === "undefined") {
             start_time = new Date().getTime()
+            audio.currentTime = 0
         }
         animate()
         audio.play()
